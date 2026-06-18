@@ -26,23 +26,37 @@ const ASSETS = [
     '/favicon/site.webmanifest'
 ];
 
-// Install
+// Install - Cache all assets
 self.addEventListener('install', event => {
+    console.log('[SW] Installing...');
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(ASSETS))
-            .catch(err => console.log('Cache error:', err))
+            .then(cache => {
+                console.log('[SW] Caching assets');
+                // Use individual add calls to avoid failing all if one fails
+                return Promise.allSettled(
+                    ASSETS.map(url =>
+                        cache.add(url).catch(err => {
+                            console.warn('[SW] Failed to cache:', url, err);
+                        })
+                    )
+                );
+            })
     );
     self.skipWaiting();
 });
 
-// Activate
+// Activate - Clean old caches
 self.addEventListener('activate', event => {
+    console.log('[SW] Activating...');
     event.waitUntil(
         caches.keys().then(keys => {
             return Promise.all(
                 keys.filter(key => key !== CACHE_NAME)
-                    .map(key => caches.delete(key))
+                    .map(key => {
+                        console.log('[SW] Deleting old cache:', key);
+                        return caches.delete(key);
+                    })
             );
         })
     );
@@ -76,7 +90,8 @@ self.addEventListener('fetch', event => {
                 return caches.match(event.request)
                     .then(cached => {
                         if (cached) return cached;
-                        if (event.request.headers.get('accept').includes('text/html')) {
+                        // If HTML request fails, show offline page
+                        if (event.request.headers.get('accept')?.includes('text/html')) {
                             return caches.match('/offline.html');
                         }
                     });

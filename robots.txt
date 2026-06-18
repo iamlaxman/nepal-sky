@@ -1,0 +1,18 @@
+# Nepal Sky - Robots.txt
+# https://nepalsky.laxman-poudel.com.np
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://nepalsky.laxman-poudel.com.np/sitemap.xml
+
+# Crawl delay (be nice to the server)
+Crawl-delay: 10
+
+# Disallow API endpoints and assets we don't want indexed
+Disallow: /favicon/
+Disallow: /screenshots/
+Disallow: /sw.js
+Disallow: /manifest.json
+Disallow: /site.webmanifest
